@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pegar desde Portapapeles</title>
+</head>
+<body>
+  <h1>Pegar texto</h1>
+  <button id="btnPegar" type="button">Pegar del portapapeles</button>
+  <br><br>
+  <textarea id="texto" rows="12" cols="60" placeholder="Aqui aparecera el contenido del portapapeles..."></textarea>
+  <p id="estado"></p>
+
+  <script>
+    const btnPegar = document.getElementById("btnPegar");
+    const textarea = document.getElementById("texto");
+    const estado = document.getElementById("estado");
+
+    function insertarEnCursor(texto) {
+      const inicio = textarea.selectionStart ?? textarea.value.length;
+      const fin = textarea.selectionEnd ?? textarea.value.length;
+      const actual = textarea.value;
+      textarea.value = actual.slice(0, inicio) + texto + actual.slice(fin);
+      const nuevaPos = inicio + texto.length;
+      textarea.selectionStart = nuevaPos;
+      textarea.selectionEnd = nuevaPos;
+      textarea.focus();
+    }
+
+    btnPegar.addEventListener("click", async () => {
+      estado.textContent = "";
+      textarea.focus();
+
+      try {
+        if (!navigator.clipboard || !window.isSecureContext) {
+          throw new Error("Clipboard API no disponible en este contexto.");
+        }
+
+        const contenido = await navigator.clipboard.readText();
+        insertarEnCursor(contenido);
+        estado.textContent = "Texto pegado correctamente.";
+      } catch (error) {
+        estado.textContent = "Tu navegador bloqueo el portapapeles automatico. Haz clic en el textarea y pulsa Ctrl+V.";
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
